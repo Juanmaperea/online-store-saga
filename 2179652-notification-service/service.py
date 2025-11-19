@@ -1,4 +1,10 @@
-import pika, json, os, time
+import pika, json, os, time 
+import logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='[%(asctime)s] [%(levelname)s] [2179652-NOTIFICATION-SERVICE] %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
 RABBIT = os.getenv("RABBIT_URL","amqp://guest:guest@rabbitmq:5672/%2F")
 params = pika.URLParameters(RABBIT)
 conn = pika.BlockingConnection(params)
@@ -20,7 +26,7 @@ def publish_notification(evt, message):
         "timestamp": int(time.time())
     }
     ch.basic_publish(exchange='orders', routing_key='notification.sent', body=json.dumps(out))
-    print("Notification published", out)
+    logging.info("EVENT - Notification published: %s", out)
 
 def callback(ch_, method, props, body):
     evt = json.loads(body)
@@ -28,7 +34,7 @@ def callback(ch_, method, props, body):
     if eid in processed:
         ch_.basic_ack(method.delivery_tag); return
     processed.add(eid)
-    print("Notification received event:", evt.get("type"))
+    logging.info("EVENT - Notification received event: %s", evt.get("type"))
     if evt.get("type") == "shipping.scheduled":
         publish_notification(evt, "Your order has been shipped!")
     else:
@@ -36,5 +42,5 @@ def callback(ch_, method, props, body):
     ch_.basic_ack(method.delivery_tag)
 
 ch.basic_consume('notification-queue', callback)
-print("Notification Service listening...")
+logging.info("Notification Service listening...")
 ch.start_consuming()

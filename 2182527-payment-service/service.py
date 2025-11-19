@@ -1,4 +1,10 @@
-import pika, json, os, time, uuid, random
+import pika, json, os, time, uuid, random 
+import logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='[%(asctime)s] [%(levelname)s] [2182527-PAYMENT-SERVICE] %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
 RABBIT = os.getenv("RABBIT_URL","amqp://guest:guest@rabbitmq:5672/%2F")
 params = pika.URLParameters(RABBIT)
 conn = pika.BlockingConnection(params)
@@ -21,7 +27,7 @@ def publish_payment(evt, success=True):
     }
     rk = 'payment.completed' if success else 'payment.failed'
     ch.basic_publish(exchange='orders', routing_key=rk, body=json.dumps(out))
-    print("Published",rk,out)
+    logging.info("EVENT - Published: %s | %s", rk, out)
 
 def callback(ch_, method, props, body):
     evt = json.loads(body)
@@ -29,7 +35,7 @@ def callback(ch_, method, props, body):
     if eid in processed:
         ch_.basic_ack(method.delivery_tag); return
     processed.add(eid)
-    print("Payment received", evt)
+    logging.info("EVENT - Payment received: %s", evt)
     # simulate payment success with 90% probability
     success = random.random() < 0.9
     time.sleep(1)
@@ -37,5 +43,5 @@ def callback(ch_, method, props, body):
     ch_.basic_ack(method.delivery_tag)
 
 ch.basic_consume('payment-queue', callback)
-print("Payment Service listening...")
+logging.info("Payment Service listening...")
 ch.start_consuming()

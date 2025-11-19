@@ -1,4 +1,10 @@
-import pika, json, os
+import pika, json, os 
+import logging 
+logging.basicConfig(
+    level=logging.INFO,
+    format='[%(asctime)s] [%(levelname)s] [2259395-ORDER-HISTORY] %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
 RABBIT = os.getenv("RABBIT_URL","amqp://guest:guest@rabbitmq:5672/%2F")
 params = pika.URLParameters(RABBIT)
 conn = pika.BlockingConnection(params)
@@ -21,9 +27,9 @@ def callback(ch_, method, props, body):
     processed.add(eid)
     order_id = evt.get("order_id")
     store.setdefault(order_id, []).append(evt)
-    print("History stored event for", order_id, "type:", evt.get("type"))
+    logging.info("EVENT - History stored event for %s | type: %s", order_id, evt.get("type"))
     ch_.basic_ack(method.delivery_tag)
 
 ch.basic_consume('order-history-queue', callback)
-print("Order History listening...")
+logging.info("Order History listening...")
 ch.start_consuming()
