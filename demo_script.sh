@@ -1,5 +1,6 @@
 #!/bin/bash
 echo "Build images..."
+docker build -t online-store/checkout-service:dev ./1926462-checkout-service
 
 echo "Apply RabbitMQ..."
 kubectl apply -f k8s/rabbitmq-deployment.yaml
