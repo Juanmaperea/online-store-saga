@@ -3,6 +3,7 @@ echo "Build images..."
 docker build -t online-store/checkout-service:dev ./1926462-checkout-service
 docker build -t online-store/order-validator:dev ./2159832-order-validator
 docker build -t online-store/shipping-service:dev ./2240581-shipping-service
+docker build -t online-store/notification-service:dev ./2179652-notification-service
 
 echo "Apply RabbitMQ..."
 kubectl apply -f k8s/rabbitmq-deployment.yaml
