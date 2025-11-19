@@ -13,7 +13,8 @@ ch.exchange_declare(exchange='orders', exchange_type='topic', durable=True)
 ch.queue_declare(queue='notification-queue', durable=True)
 ch.queue_bind(exchange='orders', queue='notification-queue', routing_key='shipping.scheduled')
 ch.queue_bind(exchange='orders', queue='notification-queue', routing_key='payment.failed')
-ch.queue_bind(exchange='orders', queue='notification-queue', routing_key='inventory.failed')
+ch.queue_bind(exchange='orders', queue='notification-queue', routing_key='inventory.failed') 
+ch.queue_bind(exchange='orders', queue='notification-queue', routing_key='order.failed')
 
 processed = set()
 
