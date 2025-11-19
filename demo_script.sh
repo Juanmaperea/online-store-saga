@@ -6,6 +6,7 @@ docker build -t online-store/payment-service:dev ./2182527-payment-service
 docker build -t online-store/inventory-service:dev ./1832375-inventory-service
 docker build -t online-store/shipping-service:dev ./2240581-shipping-service
 docker build -t online-store/order-history:dev ./2259395-order-history
+docker build -t online-store/notification-service:dev ./2179652-notification-service
 
 echo "Apply RabbitMQ..."
 kubectl apply -f k8s/rabbitmq-deployment.yaml
