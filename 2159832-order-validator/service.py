@@ -1,4 +1,10 @@
-import pika, json, os, time
+import pika, json, os, time 
+import logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='[%(asctime)s] [%(levelname)s] [2159832-ORDER-VALIDATOR] %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
 RABBIT = os.getenv("RABBIT_URL","amqp://guest:guest@rabbitmq:5672/%2F")
 params = pika.URLParameters(RABBIT)
 conn = pika.BlockingConnection(params)
@@ -19,7 +25,7 @@ def publish_validated(evt, valid=True):
     }
     rk = 'order.validated' if valid else 'order.rejected'
     ch.basic_publish(exchange='orders', routing_key=rk, body=json.dumps(out))
-    print("Published", rk, out)
+    logging.info("EVENT - Published: %s | %s", rk, out)
 
 def callback(ch_, method, props, body):
     evt = json.loads(body)
@@ -27,11 +33,11 @@ def callback(ch_, method, props, body):
     if eid in processed:
         ch_.basic_ack(method.delivery_tag); return
     processed.add(eid)
-    print("Validator received", evt)
+    logging.info("EVENT - Validator received: %s", evt)
     valid = (evt.get("total",0) > 0 and len(evt.get("items",[]))>0)
     publish_validated(evt, valid)
     ch_.basic_ack(method.delivery_tag)
 
 ch.basic_consume('order-validator-queue', callback)
-print("Order Validator listening...")
+logging.info("Order Validator listening...")
 ch.start_consuming()

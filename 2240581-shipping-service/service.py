@@ -1,4 +1,10 @@
-import pika, json, os, time, uuid
+import pika, json, os, time, uuid 
+import logging 
+logging.basicConfig(
+    level=logging.INFO,
+    format='[%(asctime)s] [%(levelname)s] [2240581-SHIPPING-SERVICE] %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+) 
 RABBIT = os.getenv("RABBIT_URL","amqp://guest:guest@rabbitmq:5672/%2F")
 params = pika.URLParameters(RABBIT)
 conn = pika.BlockingConnection(params)
@@ -19,7 +25,7 @@ def publish_shipping(evt):
         "timestamp": int(time.time())
     }
     ch.basic_publish(exchange='orders', routing_key='shipping.scheduled', body=json.dumps(out))
-    print("Published shipping.scheduled", out)
+    logging.info("EVENT - Published shipping.scheduled: %s", out)
 
 def callback(ch_, method, props, body):
     evt = json.loads(body)
@@ -27,11 +33,11 @@ def callback(ch_, method, props, body):
     if eid in processed:
         ch_.basic_ack(method.delivery_tag); return
     processed.add(eid)
-    print("Shipping received", evt)
+    logging.info("EVENT - Shipping received: %s", evt)
     time.sleep(0.5)
     publish_shipping(evt)
     ch_.basic_ack(method.delivery_tag)
 
 ch.basic_consume('shipping-queue', callback)
-print("Shipping Service listening...")
+logging.info("Shipping Service listening...")
 ch.start_consuming()
