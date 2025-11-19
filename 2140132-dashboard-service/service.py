@@ -1,5 +1,11 @@
 import pika, json, os, threading
-from flask import Flask, jsonify
+from flask import Flask, jsonify 
+import logging 
+logging.basicConfig(
+    level=logging.INFO,
+    format='[%(asctime)s] [%(levelname)s] [2140132-DASHBOARD-SERVICE] %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
 
 RABBIT = os.getenv("RABBIT_URL","amqp://guest:guest@rabbitmq:5672/%2F")
 params = pika.URLParameters(RABBIT)
@@ -13,8 +19,15 @@ store = []
 
 def callback(ch_, method, props, body):
     evt = json.loads(body)
-    store.append(evt)
-    print("Dashboard received:", evt.get("type"))
+    store.append(evt) 
+    order_id = evt.get("order_id", "UNKNOWN")
+    event_type = evt.get("type", "unknown")
+    logging.info("")
+    logging.info("==========================================")
+    logging.info("🔥 PROCESSING ORDER %s | EVENT: %s 🔥", str(order_id).upper(), event_type.upper())
+    logging.info("==========================================")
+    print("Dashboard received:", evt.get("type")) 
+    logging.info("EVENT - Dashboard received: %s", evt.get("type"))
     ch_.basic_ack(method.delivery_tag)
 
 def start_consumer():
