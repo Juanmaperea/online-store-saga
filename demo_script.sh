@@ -1,5 +1,6 @@
 #!/bin/bash
 echo "Build images..."
+docker build -t online-store/dashboard-service:dev ./2140132-dashboard-service
 docker build -t online-store/checkout-service:dev ./1926462-checkout-service
 docker build -t online-store/order-validator:dev ./2159832-order-validator
 docker build -t online-store/payment-service:dev ./2182527-payment-service
