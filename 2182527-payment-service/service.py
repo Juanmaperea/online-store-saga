@@ -37,7 +37,7 @@ def callback(ch_, method, props, body):
     processed.add(eid)
     logging.info("EVENT - Payment received: %s", evt)
     # simulate payment success with 90% probability
-    success = random.random() < 0.9
+    success = random.random() < 1.0
     time.sleep(1)
     publish_payment(evt, success)
     ch_.basic_ack(method.delivery_tag)
